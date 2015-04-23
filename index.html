@@ -41,7 +41,7 @@
   </head>
   <body>
     <div id="editor">
-      <textarea v-on="scroll: scroll" v-model="input" debounce="100">
+      <textarea onmouseover="mousein(this)" onmouseout="mouseout(this)" v-on="scroll: scroll" v-model="input" debounce="100">
 # 欢迎使用 Cmd - 在线 Markdown 编辑阅读器
 
 ------
@@ -205,11 +205,18 @@ Bob-->Alice: I am good thanks!
 [3]: http://weibo.com/ghosert
 [4]: http://meta.math.stackexchange.com/questions/5020/mathjax-basic-tutorial-and-quick-reference
       </textarea>
-      <div v-html="input | marked"></div>
+      <div v-on="scroll: scroll" onmouseover="mousein(this)" onmouseout="mouseout(this)" v-html="input | marked"></div>
     </div>
     <script src="vue.min.js"></script>
     <script src="marked.min.js"></script>
     <script>
+      focus = null
+      mousein = function (e) {
+        focus = e.localName
+      }
+      mouseout = function (e) {
+        focus = null
+      }
       new Vue({
         el: '#editor',
         filters: {
@@ -218,11 +225,12 @@ Bob-->Alice: I am good thanks!
         methods: {
           scroll: function (e) {
             percent = e.target.scrollTop / e.target.scrollHeight;
-            for(i = 0; i< e.targetVM.$el.children.length; i++)
+            for(var i = 0; i< e.targetVM.$el.children.length; i++){
               child = e.targetVM.$el.children[i];
-              if (child.localName != e.target.localName){
+              if (focus != child.localName && child.localName != e.target.localName){
                 child.scrollTop = percent * child.scrollHeight
               }
+            }
           }
         }
       });
