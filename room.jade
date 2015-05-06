@@ -37,16 +37,17 @@ html
   body
     #editor
       textarea#textarea(v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll", v-model="input", debounce="100") !{data}
-      div#preview(v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll", v-html="input | sync | marked")
+      div#preview(v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll", v-html="input | sync | marked | xss")
     script(src="vue.min.js")
     script(src="marked.min.js")
+    script(src="xss.min.js")
     script(src="/socket.io/socket.io.js")
     script.
       var socket = io("/#{id}");
       var focus = null;
       socket.on('data', function(data){
         document.getElementById("textarea").value = data;
-        document.getElementById("preview").innerHTML = marked(data);
+        document.getElementById("preview").innerHTML = filterXSS(marked(data));
       });
       new Vue({
         el: '#editor',
@@ -55,7 +56,10 @@ html
           sync: function (data) {
             socket.emit('data', data);
             return data;
-          }
+          },
+          xss: function (data) {
+            return filterXSS(data);
+          },
         },
         methods: {
           scroll: function (e) {
