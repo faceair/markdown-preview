@@ -4,7 +4,6 @@ http = require('http').Server(app)
 io = require('socket.io')(http)
 path = require 'path'
 _ = require 'lodash'
-xss = require 'xss'
 redis =  require('redis').createClient()
 rooms = []
 
@@ -40,6 +39,6 @@ app.get '/:id', (req, res) ->
   redis.get req.params.id, (err, data) ->
     res.render 'room',
       id: req.params.id
-      data: xss data
+      data: data
 
 http.listen 5748, ->
