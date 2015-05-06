@@ -1,10 +1,13 @@
 {
-  "name": "markdown-preview",
+  "name": "markpad",
   "version": "0.1.0",
-  "description": "markdown preview",
+  "description": "real-time markdown editor.",
   "main": "app.coffee",
   "dependencies": {
     "express": "^4.12.3",
+    "jade": "^1.9.2",
+    "lodash": "^3.8.0",
+    "redis": "^0.12.1",
     "socket.io": "^1.3.5"
   },
   "devDependencies": {},
@@ -13,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/faceair/markdown-preview.git"
+    "url": "git+https://github.com/faceair/markpad.git"
   },
   "keywords": [
     "markdown"
@@ -21,7 +24,7 @@
   "author": "faceair",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/faceair/markdown-preview/issues"
+    "url": "https://github.com/faceair/markpad/issues"
   },
-  "homepage": "https://github.com/faceair/markdown-preview#readme"
+  "homepage": "https://github.com/faceair/markpad#readme"
 }

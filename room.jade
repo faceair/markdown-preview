@@ -1,16 +1,15 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <title>Markdown Preview</title>
-    <style>
+doctype html
+html
+  head
+    meta(charset="utf-8")
+    title MarkPad
+    style.
       html, body, #editor {
         margin: 0;
         height: 100%;
         font-family: 'Helvetica Neue', Arial, sans-serif;
         color: #333;
       }
-
       textarea, #editor div {
         display: inline-block;
         width: 49.8%;
@@ -22,7 +21,6 @@
         padding: 0 20px;
         overflow-y: auto;
       }
-
       textarea {
         border: none;
         border-right: 1px solid #ccc;
@@ -33,25 +31,22 @@
         font-family: 'Monaco', courier, monospace;
         padding: 20px;
       }
-
       code {
         color: #f66;
       }
-    </style>
-  </head>
-  <body>
-    <div id="editor">
-      <textarea id="textarea" v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll" v-model="input" debounce="100"></textarea>
-      <div v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll" v-html="input | sync | marked"></div>
-    </div>
-    <script src="vue.min.js"></script>
-    <script src="marked.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <script>
-      var socket = io();
+  body
+    #editor
+      textarea#textarea(v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll", v-model="input", debounce="100") !{data}
+      div#preview(v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll", v-html="input | sync | marked")
+    script(src="vue.min.js")
+    script(src="marked.min.js")
+    script(src="/socket.io/socket.io.js")
+    script.
+      var socket = io("/#{id}");
       var focus = null;
       socket.on('data', function(data){
         document.getElementById("textarea").value = data;
+        document.getElementById("preview").innerHTML = marked(data);
       });
       new Vue({
         el: '#editor',
@@ -64,25 +59,22 @@
         },
         methods: {
           scroll: function (e) {
-            var percent, child, i;
-            percent = e.target.scrollTop / e.target.scrollHeight;
-            for (i = 0; i< e.targetVM.$el.children.length; i++) {
-              child = e.targetVM.$el.children[i];
-              if (focus != child.localName && child.localName != e.target.localName) {
-                child.scrollTop = percent * child.scrollHeight;
+              var percent, child, i;
+              percent = e.target.scrollTop / e.target.scrollHeight;
+              for (i = 0; i< e.targetVM.$el.children.length; i++) {
+                child = e.targetVM.$el.children[i];
+                if (focus != child.localName && child.localName != e.target.localName) {
+                  child.scrollTop = percent * child.scrollHeight;
+                }
               }
-            }
-          },
+            },
           mousein: function (e) {
             focus = e.target.localName;
             if (focus != 'textarea')
               focus = 'div';
-          },
+            },
           mouseout: function (e) {
             focus = null;
           }
         }
       });
-    </script>
-  </body>
-</html>
