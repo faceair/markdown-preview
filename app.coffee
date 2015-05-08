@@ -17,13 +17,24 @@ createID = (length = 6) ->
   else
     return id
 
+applyChange = (data, changes) ->
+  _.map changes, (change) ->
+    switch change.t
+      when 'r'
+        data = data.substr(0, change.s) + data.substr(change.e)
+      when 'i'
+        data = data.substr(0, change.s) + change.v +  data.substr(change.s)
+  return data
+
 createRoom = (id) ->
   return if rooms[id]
   rooms[id] = io.of id
   rooms[id].on 'connection', (socket) ->
-    socket.on 'data', (data) ->
-      redis.set id, data, ->
-        socket.broadcast.emit 'data', data
+    socket.on 'diff', (changes) ->
+      redis.get id, (err, data) ->
+        data = applyChange data, changes
+        redis.set id, data, ->
+          socket.broadcast.emit 'diff', changes
 
 app.set 'views', __dirname
 app.set 'view engine', 'jade'
