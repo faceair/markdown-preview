@@ -1,55 +1,31 @@
+{randomString} = require './utils'
+config = require './config'
 express = require 'express'
-app = express()
-http = require('http').Server(app)
-io = require('socket.io')(http)
+Room = require './room'
+storage =  './storage'
 path = require 'path'
-_ = require 'lodash'
-redis =  require('redis').createClient()
-rooms = []
+rooms = {}
 
-createID = (length = 6) ->
-  char_map = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  result = _.map _.range(0, length), ->
-    return char_map.charAt Math.floor(Math.random() * char_map.length)
-  id = result.join ''
-  if rooms[id]
-    return createID length
-  else
-    return id
-
-applyChange = (data, changes) ->
-  _.map changes, (change) ->
-    switch change.t
-      when 'r'
-        data = data.substr(0, change.s) + data.substr(change.e)
-      when 'i'
-        data = data.substr(0, change.s) + change.v +  data.substr(change.s)
-  return data
-
-createRoom = (id) ->
-  return if rooms[id]
-  rooms[id] = io.of id
-  rooms[id].on 'connection', (socket) ->
-    socket.on 'diff', (changes) ->
-      redis.get id, (err, data) ->
-        data = applyChange data, changes
-        redis.set id, data, ->
-          socket.broadcast.emit 'diff', changes
+app = express()
 
 app.set 'views', __dirname
 app.set 'view engine', 'jade'
 app.use express.static(path.join(__dirname, 'statics'))
 
 app.get '/', (req, res) ->
-  id = createID()
-  createRoom id
-  res.redirect "/#{id}"
+  res.redirect "/#{randomString(10)}"
 
-app.get '/:id', (req, res) ->
-  createRoom req.params.id
-  redis.get req.params.id, (err, data) ->
+app.get '/:room_id', (req, res, next) ->
+  {room_id} = req.params
+
+  unless rooms[room_id]
+    rooms[room_id] = new Room room_id
+
+  storage.get room_id
+  .then (base_data) ->
     res.render 'room',
-      id: req.params.id
-      data: data
+      room_id: room_id
+      base_data: base_data
 
-http.listen 5748, ->
+app.listen config.web.port, ->
+  console.info 'markpad is running ...'
