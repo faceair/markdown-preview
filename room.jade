@@ -50,6 +50,7 @@ html
       var focus = null;
       
       socket.on('change', function(changes){
+        old_data = document.getElementById("textarea").value;
         data = OP.applyChanges(document.getElementById("textarea").value, changes);
         document.getElementById("textarea").value = data;
         document.getElementById("preview").innerHTML = filterXSS(marked(data));
@@ -60,7 +61,7 @@ html
           sync: function (data) {
             socket.emit('change', {
               h: md5(old_data),
-              c:  OP.diffString(old_data, data)
+              c: OP.diffString(old_data, data)
             });
             old_data = data;
             return data;

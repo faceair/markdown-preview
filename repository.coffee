@@ -1,22 +1,39 @@
 _ = require 'underscore'
+Q = require 'q'
 {md5} = require './utils'
 OP = require './op'
 
 class Branch
-  constructor: (@HEAD = '', changes = []) ->
+  constructor: (@HEAD = '') ->
     @database = []
     @push()
 
-    unless _.isEmpty changes
-      @commit changes
-
   getHead: ->
-    return @HEAD
+    _.last @database
 
-  commit: (changes) ->
-    return if _.isEmpty changes
-    @HEAD = OP.applyChanges @HEAD, changes
-    @push()
+  commit: (hash, changes) ->
+    Q.promise (resolve, reject) =>
+      if _.isEmpty changes
+        reject new Error 'empty changes'
+      if @getHead().hash is hash
+        @HEAD = OP.applyChanges @HEAD, changes
+        @push()
+        resolve @
+      else
+        reject new Error 'unknown hash'
+
+  merge: (branch) ->
+    Q.promise (resolve, reject) =>
+      {hash, data} = @getHead()
+      is_old = _.find branch.database, (row) ->
+        row.hash is hash
+      if is_old
+        changes = OP.diffString data, _.last(branch.database).data
+        @commit(hash, changes).then =>
+          resolve @
+        .catch reject
+      else
+        reject new Error 'merge reject'
 
   push: ->
     @database.push
@@ -30,13 +47,8 @@ module.exports = class Repository
       master: new Branch(data)
 
   createBranch: (name) ->
-    @branches[name] = new Branch(@branches.master.getHead())
+    @branches[name] = new Branch(@branches.master.getHead().data)
     return @branches[name]
 
   deleteBranch: (name) ->
     delete @branches[name]
-
-  mergeBranches: (name_1, name_2 = 'master') ->
-    return unless @branches[name_1]
-    changes = OP.diffString @branches[name_1].getHead(), @branches[name_2].getHead()
-    @branches[name_2].commit changes
