@@ -44,16 +44,11 @@ OP.mergeChanges = (changes_arr) ->
   removes = _.filter changes, (change) ->
     change.t is 'r'
   for remove, i in removes
-    conflict = false
     for remove_other, j in removes when j > i
       other_in = remove.s < remove_other.s and remove_other.s < remove.e
       self_in = remove_other.s < remove.s and remove.s < remove_other.e
       if other_in or self_in
-        conflict = true
-
-      if conflict
-        removes = _.without removes, remove
-        removes = _.without removes, remove_other
+        removes = _.without removes, remove, remove_other
         removes.push
           t: 'r'
           s: Math.min(remove.s, remove_other.s)

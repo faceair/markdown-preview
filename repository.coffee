@@ -1,5 +1,6 @@
 _ = require 'underscore'
 {md5} = require './utils'
+OP = require './op'
 
 class Branch
   constructor: (@HEAD = '', changes = []) ->
@@ -7,19 +8,14 @@ class Branch
     @push()
 
     unless _.isEmpty changes
-      @applyChanges @HEAD, changes
+      @commit changes
 
   getHead: ->
     return @HEAD
 
   commit: (changes) ->
-    return unless changes
-    changes.map (change) =>
-      switch change.t
-        when 'r'
-          @HEAD = @HEAD.substr(0, change.s) + @HEAD.substr(change.e)
-        when 'i'
-          @HEAD = @HEAD.substr(0, change.s) + change.v +  @HEAD.substr(change.s)
+    return if _.isEmpty changes
+    @HEAD = OP.applyChanges @HEAD, changes
     @push()
 
   push: ->
@@ -40,7 +36,7 @@ module.exports = class Repository
   deleteBranch: (name) ->
     delete @branches[name]
 
-  diffBranch: ->
-
-  mergeBranches: (callback) ->
-    @branches.map (branches) ->
+  mergeBranches: (name_1, name_2 = 'master') ->
+    return unless @branches[name_1]
+    changes = OP.diffString @branches[name_1].getHead(), @branches[name_2].getHead()
+    @branches[name_2].commit changes

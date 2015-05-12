@@ -43,53 +43,14 @@ html
     script(src="xss.min.js")
     script(src="md5.min.js")
     script(src="socket.io.min.js")
+    script(src="op.js")
     script.
-      var socket = io(":5748/#{room_id}");
+      var socket = io("/#{room_id}");
       var old_data = document.getElementById("textarea").value;
       var focus = null;
       
-      var diffString = function(oldval, newval) {
-        if (oldval === newval) return [];
-          
-        var commonStart = 0;
-        while (oldval.charAt(commonStart) === newval.charAt(commonStart)) {
-          commonStart++;
-        }
-
-        var commonEnd = 0;
-        while (oldval.charAt(oldval.length - 1 - commonEnd) === newval.charAt(newval.length - 1 - commonEnd) &&
-               commonEnd + commonStart < oldval.length && commonEnd + commonStart < newval.length) {
-          commonEnd++;
-        }
-
-        var changes = [];
-        if (oldval.length !== commonStart + commonEnd) {
-          changes.push({t: 'r', s: commonStart, e: oldval.length - commonEnd});
-        }
-        if (newval.length !== commonStart + commonEnd) {
-          changes.push({t: 'i', s: commonStart, v: newval.slice(commonStart, newval.length - commonEnd)});
-        }
-
-        return changes;
-      };
-      
-      var applyChange = function(data, changes) {
-        for(var i = 0, l = changes.length; i < l; i++) {
-          var change = changes[i];
-          switch (change.t) {
-            case 'r':
-              data = data.substr(0, change.s) + data.substr(change.e);
-              break;
-            case 'i':
-              data = data.substr(0, change.s) + change.v + data.substr(change.s);
-              break;
-          }
-        }
-        return data;
-      };
-      
       socket.on('change', function(changes){
-        data = applyChange(document.getElementById("textarea").value, changes);
+        data = OP.applyChanges(document.getElementById("textarea").value, changes);
         document.getElementById("textarea").value = data;
         document.getElementById("preview").innerHTML = filterXSS(marked(data));
       });
@@ -97,10 +58,9 @@ html
         el: '#editor',
         filters: {
           sync: function (data) {
-          changes = diffString(old_data, data);
             socket.emit('change', {
               h: md5(old_data),
-              c: changes
+              c:  OP.diffString(old_data, data)
             });
             old_data = data;
             return data;
