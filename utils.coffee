@@ -1,3 +1,6 @@
+_ = require 'underscore'
+crypto = require 'crypto'
+
 exports.md5 = (data) ->
   if data
     return crypto.createHash('md5').update(data).digest('hex')
