@@ -4,6 +4,7 @@
   "description": "real-time markdown editor.",
   "main": "app.coffee",
   "dependencies": {
+    "blueimp-md5": "^1.1.0",
     "express": "^4.12.3",
     "jade": "^1.9.2",
     "q": "^1.4.0",
