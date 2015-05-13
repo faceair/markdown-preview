@@ -6,7 +6,7 @@ OP = require './op'
 class Branch
   constructor: (@HEAD = '') ->
     @database = []
-    @push()
+    @push []
 
   getHead: ->
     _.last @database
@@ -15,12 +15,30 @@ class Branch
     Q.promise (resolve, reject) =>
       if _.isEmpty changes
         reject new Error 'empty changes'
+
       if @getHead().hash is hash
         @HEAD = OP.applyChanges @HEAD, changes
-        @push()
+        @push changes
         resolve @
       else
-        reject new Error 'unknown hash'
+        i = null
+        old_rows = _.compact _.map @database, (row, index) ->
+          if row.hash is hash
+            i = index
+          if i and index > i
+            return row
+          else
+            return
+
+        if _.isEmpty old_rows
+          reject new Error 'unknown hash'
+        else
+          old_changes = _.map old_rows, (row) ->
+            return row.changes
+          new_changes = OP.mergeChanges [changes, old_changes]
+          @HEAD = OP.applyChanges @HEAD, new_changes
+          @push new_changes
+          resolve @
 
   merge: (branch) ->
     Q.promise (resolve, reject) =>
@@ -35,11 +53,11 @@ class Branch
       else
         reject new Error 'merge reject'
 
-  push: ->
+  push: (changes) ->
     @database.push
       data: @HEAD
       hash: md5(@HEAD)
-      time: _.now()
+      changes: changes
 
 module.exports = class Repository
   constructor: (data) ->

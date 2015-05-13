@@ -50,8 +50,7 @@ html
       var focus = null;
       
       socket.on('change', function(changes){
-        data = OP.applyChanges(document.getElementById("textarea").value, changes);
-        old_data = data;
+        old_data = data = OP.applyChanges(document.getElementById("textarea").value, changes);
         document.getElementById("textarea").value = data;
         document.getElementById("preview").innerHTML = filterXSS(marked(data));
       });
