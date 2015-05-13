@@ -35,7 +35,8 @@ class Branch
         else
           old_changes = _.map old_rows, (row) ->
             return row.changes
-          new_changes = OP.mergeChanges [changes, old_changes]
+          old_changes.push changes
+          new_changes = OP.mergeChanges old_changes
           @HEAD = OP.applyChanges @HEAD, new_changes
           @push new_changes
           resolve @
