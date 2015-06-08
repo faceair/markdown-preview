@@ -36,8 +36,8 @@ html
       }
   body
     #editor
-      textarea#textarea(v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll", v-model="input", debounce="100") !{base_data}
-      div#preview(v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll", v-html="input | sync | marked | xss")
+      textarea#textarea(v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll, textInput: input, keydown: input, keyup: input, select: input, cut: input, paste: input") !{base_data}
+      div#preview(v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll")
     script(src="vue.min.js")
     script(src="marked.min.js")
     script(src="xss.min.js")
@@ -56,19 +56,16 @@ html
       });
       new Vue({
         el: '#editor',
-        filters: {
-          sync: function (data) {
+        methods: {
+          input: function (e) {
+            data = e.srcElement.value;
             socket.emit('change', {
               h: md5(old_data),
               c: OP.diffString(old_data, data)
             });
             old_data = data;
-            return data;
+            document.getElementById("preview").innerHTML = filterXSS(marked(data));
           },
-          marked: marked,
-          xss: filterXSS,
-        },
-        methods: {
           scroll: function (e) {
               var percent, child, i;
               percent = e.target.scrollTop / e.target.scrollHeight;
