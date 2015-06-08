@@ -46,14 +46,21 @@ html
     script(src="op.js")
     script.
       var socket = io("/#{room_id}");
-      var old_data = document.getElementById("textarea").value;
+      var old_data = document.getElementById("textarea").value;      
       var focus = null;
       
+      var preview = function (data) {
+        document.getElementById("preview").innerHTML = filterXSS(marked(old_data));
+      }
+
+      preview(old_data);
+        
       socket.on('change', function(changes){
         old_data = data = OP.applyChanges(document.getElementById("textarea").value, changes);
         document.getElementById("textarea").value = data;
-        document.getElementById("preview").innerHTML = filterXSS(marked(data));
+        preview(data);
       });
+
       new Vue({
         el: '#editor',
         methods: {
@@ -64,7 +71,7 @@ html
               c: OP.diffString(old_data, data)
             });
             old_data = data;
-            document.getElementById("preview").innerHTML = filterXSS(marked(data));
+            preview(data);
           },
           scroll: function (e) {
               var percent, child, i;
