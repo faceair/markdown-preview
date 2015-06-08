@@ -18,17 +18,23 @@ OP.diffString = function(oldval, newval) {
   }
   changes = [];
   if (oldval.length !== (commonStart + commonEnd)) {
+    s = commonStart;
+    e = oldval.length - commonEnd;
+    console.log('log: 删除了从第'+commonStart+'到'+e+'位置的字符');
     changes.push({
       t: 'r',
-      s: commonStart,
-      e: oldval.length - commonEnd
+      s: s,
+      e: e
     });
   }
   if (newval.length !== (commonStart + commonEnd)) {
+    s = commonStart,
+    v = newval.slice(commonStart, newval.length - commonEnd)
+    console.log('log: 在位置'+s+'添加了“'+v+'”');
     changes.push({
       t: 'i',
-      s: commonStart,
-      v: newval.slice(commonStart, newval.length - commonEnd)
+      s: s,
+      v: v
     });
   }
   return changes;
