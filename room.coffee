@@ -43,5 +43,5 @@ module.exports = class Room
 
       @repository = new Repository(base_data)
       @room.on 'connection', (socket) =>
-
+        socket.emit 'connection'
         member = new Member socket, @

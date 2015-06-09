@@ -36,7 +36,7 @@ html
       }
   body
     #editor
-      textarea#textarea(v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll, textInput: input, keydown: input, keyup: input, select: input, cut: input, paste: input") !{base_data}
+      textarea#textarea(disabled="disabled", v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll, textInput: input, keydown: input, keyup: input, select: input, cut: input, paste: input") !{base_data}
       div#preview(v-on="mouseover: mousein, mouseout: mouseout, scroll: scroll")
     script(src="vue.min.js")
     script(src="marked.min.js")
@@ -53,7 +53,9 @@ html
         document.getElementById("preview").innerHTML = filterXSS(marked(old_data));
       }
 
-      preview(old_data);
+      socket.on('connection', function(){
+        document.getElementById("textarea").removeAttribute("disabled");
+      });
         
       socket.on('change', function(changes){
         old_data = data = OP.applyChanges(document.getElementById("textarea").value, changes);
@@ -66,9 +68,11 @@ html
         methods: {
           input: function (e) {
             data = e.srcElement.value;
+            changes = OP.diffString(old_data, data);
+            if(changes.length === 0) return;
             socket.emit('change', {
               h: md5(old_data),
-              c: OP.diffString(old_data, data)
+              c: changes
             });
             old_data = data;
             preview(data);
