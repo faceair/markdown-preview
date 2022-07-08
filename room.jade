@@ -45,10 +45,10 @@ html
     script(src="socket.io.min.js")
     script(src="op.js")
     script.
-      var socket = io("/#{room_id}");
-      var old_data = document.getElementById("textarea").value;      
+      var socket = io(location.protocol + '//' + location.host + "/#{room_id}");
+      var old_data = document.getElementById("textarea").value;
       var focus = null;
-      
+
       var preview = function (data) {
         document.getElementById("preview").innerHTML = filterXSS(marked(old_data));
       }
@@ -56,7 +56,7 @@ html
       socket.on('connection', function(){
         document.getElementById("textarea").removeAttribute("disabled");
       });
-        
+
       socket.on('change', function(changes){
         old_data = data = OP.applyChanges(document.getElementById("textarea").value, changes);
         document.getElementById("textarea").value = data;

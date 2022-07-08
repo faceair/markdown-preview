@@ -40,7 +40,7 @@ module.exports = class Room
   constructor: (@room_id, io) ->
     @room = io.of "/#{@room_id}"
     storage.get(@room_id).then (base_data) =>
-
+      base_data = '' if base_data == null
       @repository = new Repository(base_data)
       @room.on 'connection', (socket) =>
         socket.emit 'connection'
